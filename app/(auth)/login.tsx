@@ -17,6 +17,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
   const scaleValue = new Animated.Value(1);
   const floatValue = useRef(new Animated.Value(0)).current;
@@ -88,6 +89,8 @@ export default function LoginScreen() {
     transform: [{ scale: scaleValue }],
   };
 
+  const isButtonDisabled = !email || !password;
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.shapeContainer}>
@@ -133,14 +136,21 @@ export default function LoginScreen() {
             placeholderTextColor="#8E8E93"
             value={password}
             onChangeText={(text) => { setPassword(text); setError(''); }}
-            secureTextEntry
+            secureTextEntry={!isPasswordVisible}
           />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+          >
+            <Ionicons name={isPasswordVisible ? "eye-off" : "eye"} size={24} color="#8E8E93" />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity 
-          style={styles.button} 
+          style={[styles.button, isButtonDisabled && styles.buttonDisabled]} 
           onPress={handleLogin} 
           onPressIn={handlePressIn} 
           onPressOut={handlePressOut}
+          disabled={isButtonDisabled}
         >
           <Animated.View style={animatedStyle}>
             <Text style={styles.buttonText}>Log In</Text>
@@ -148,7 +158,11 @@ export default function LoginScreen() {
         </TouchableOpacity>
         
         <View style={styles.socialLoginContainer}>
-          <Text style={styles.socialLoginText}>Or login with</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ height: 1, backgroundColor: "#8E8E93", width: width * 0.38 }} />
+            <Text style={styles.socialLoginText}>OR</Text>
+            <View style={{ height: 1, backgroundColor: "#8E8E93", width: width * 0.38 }} />
+          </View>
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Social Login', 'Facebook login is not implemented yet.')}>
               <Ionicons name="logo-facebook" size={24} color="#1877F2" />
@@ -214,6 +228,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     marginBottom: 15,
@@ -221,8 +237,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   input: {
+    flex: 1,
     paddingVertical: 15,
     color: '#000',
+  },
+  eyeIcon: {
+    padding: 10,
   },
   button: {
     backgroundColor: '#007AFF',
@@ -230,6 +250,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 20,
+  },
+  buttonDisabled: {
+    backgroundColor: '#A9A9A9', // Grey color in hex
   },
   buttonText: {
     color: '#FFFFFF',
@@ -243,7 +266,7 @@ const styles = StyleSheet.create({
   socialLoginText: {
     fontSize: 16,
     color: '#8E8E93',
-    marginBottom: 15,
+    marginHorizontal: 10,
   },
   socialButtonsContainer: {
     flexDirection: 'row',

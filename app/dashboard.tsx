@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, Image, TextInput, ActivityIndicator, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -7,11 +7,10 @@ import * as Location from 'expo-location';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sports, Sport } from './config/sportsConfig';
-// You would need to import a map library here, e.g.:
-// import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 const API_KEY = 'd888abc55a29978c02f8acb1e8ac169b';
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface Weather {
   temperature: number;
@@ -34,7 +33,6 @@ interface Room {
     latitude: number;
     longitude: number;
   };
-  // Add other room properties as needed
 }
 
 export default function DashboardScreen() {
@@ -49,6 +47,28 @@ export default function DashboardScreen() {
   const [isMapExpanded, setIsMapExpanded] = useState<boolean>(false);
   const [rooms, setRooms] = useState<Room[]>([]);
   const router = useRouter();
+  const [userLocation, setUserLocation] = useState({
+    latitude: 0,
+    longitude: 0
+  });
+  const mapViewRef = useRef<MapView>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      console.log(location.coords.latitude, location.coords.longitude);
+    })();
+  }, []);
 
   useEffect(() => {
     fetchWeather();
@@ -108,7 +128,6 @@ export default function DashboardScreen() {
   };
 
   const fetchRooms = async () => {
-    // This would be replaced with an actual API call to your backend
     const mockRooms: Room[] = sports.map((sport, index) => ({
       id: `room-${index}`,
       sport: sport,
@@ -147,7 +166,7 @@ export default function DashboardScreen() {
   };
 
   const convertTemperature = (celsius: number) => {
-    return isCelsius ? celsius : (celsius * 9/5) + 32;
+    return isCelsius ? celsius : (celsius * 9 / 5) + 32;
   };
 
   const WeatherWidget = () => (
@@ -166,8 +185,8 @@ export default function DashboardScreen() {
           </View>
           <View style={styles.weatherInfo}>
             <View style={styles.weatherMain}>
-              <Image 
-                source={{uri: `http://openweathermap.org/img/wn/${weather.icon}@4x.png`}}
+              <Image
+                source={{ uri: `http://openweathermap.org/img/wn/${weather.icon}@4x.png` }}
                 style={styles.weatherIcon}
               />
               <View>
@@ -186,8 +205,8 @@ export default function DashboardScreen() {
             {weather.forecast.map((item, index) => (
               <View key={index} style={styles.forecastItem}>
                 <Text style={styles.forecastTime}>{item.time}</Text>
-                <Image 
-                  source={{uri: `http://openweathermap.org/img/wn/${item.icon}.png`}}
+                <Image
+                  source={{ uri: `http://openweathermap.org/img/wn/${item.icon}.png` }}
                   style={styles.forecastIcon}
                 />
                 <Text style={styles.forecastTemp}>{Math.round(convertTemperature(item.temperature))}°</Text>
@@ -205,14 +224,37 @@ export default function DashboardScreen() {
     <View style={styles.roomsFinderContainer}>
       <Text style={styles.roomsFinderTitle}>Rooms Finder</Text>
       <View style={[styles.mapContainer, isMapExpanded && styles.mapExpanded]}>
-        {/* Replace this View with actual MapView component when integrated */}
-        <View style={styles.mapPlaceholder}>
-          <Text>Map Placeholder</Text>
-          {/* Render room markers here when using actual MapView */}
-        </View>
+        {userLocation.latitude !== 0 && userLocation.longitude !== 0 ? (
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            showsUserLocation
+            ref={mapViewRef}
+            loadingEnabled
+            style={styles.map}
+            initialRegion={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+              latitudeDelta: 0.015,
+              longitudeDelta: 0.0121,
+            }}
+          >
+            {rooms.map((room) => (
+              <Marker
+                key={room.id}
+                coordinate={room.location}
+                title={room.sport.name}
+                description={`Room for ${room.sport.name}`}
+              />
+            ))}
+          </MapView>
+        ) : (
+          <View style={styles.mapPlaceholder}>
+            <Text>Loading map...</Text>
+          </View>
+        )}
       </View>
-      <TouchableOpacity 
-        style={styles.expandButton} 
+      <TouchableOpacity
+        style={styles.expandButton}
         onPress={() => setIsMapExpanded(!isMapExpanded)}
       >
         <Text>{isMapExpanded ? 'Shrink Map' : 'Expand Map'}</Text>
@@ -474,5 +516,8 @@ const styles = StyleSheet.create({
   },
   tabItem: {
     alignItems: 'center',
+  },
+  map: {
+    flex: 1,
   },
 });
