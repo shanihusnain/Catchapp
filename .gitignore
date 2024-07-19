@@ -1,1 +1,46 @@
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
 /node_modules
+/.pnp
+.pnp.js
+
+# Expo
+/.expo
+/.expo-shared
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Expo web
+/web-build
+
+# Optional: build directories
+/android
+/ios
+
+# Ignore config and metadata
+.expo-settings.json
+.expo
+
+# Ignore metro, haste, and react cache
+/metro-cache
+/haste-map-metro-*
+/react-native-packager-cache-*
+
+# npm packages
+package-lock.json
