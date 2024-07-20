@@ -1,22 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, SafeAreaView, Alert, Animated, Dimensions, Easing } from 'react-native';
-import { Link, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  SafeAreaView,
+  Alert,
+  Animated,
+  Dimensions,
+  Easing,
+} from "react-native";
+import { Link, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ADMIN_EMAIL = 'admin@gmail.com';
-const ADMIN_PASSWORD = 'admin';
-const MANAGER_EMAIL = 'manager@gmail.com';
-const MANAGER_PASSWORD = 'manager';
-const NORMAL_USER_EMAIL = 'user@gmail.com';
-const NORMAL_USER_PASSWORD = 'user123';
+const ADMIN_EMAIL = "admin@gmail.com";
+const ADMIN_PASSWORD = "admin";
+const MANAGER_EMAIL = "manager@gmail.com";
+const MANAGER_PASSWORD = "manager";
+const NORMAL_USER_EMAIL = "user@gmail.com";
+const NORMAL_USER_PASSWORD = "user123";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
   const scaleValue = new Animated.Value(1);
@@ -50,24 +61,27 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError('Please enter both email and password.');
+      setError("Please enter both email and password.");
       return;
     }
 
-    let userRole = '';
+    let userRole = "";
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      userRole = 'admin';
+      userRole = "admin";
     } else if (email === MANAGER_EMAIL && password === MANAGER_PASSWORD) {
-      userRole = 'manager';
-    } else if (email === NORMAL_USER_EMAIL && password === NORMAL_USER_PASSWORD) {
-      userRole = 'user';
+      userRole = "manager";
+    } else if (
+      email === NORMAL_USER_EMAIL &&
+      password === NORMAL_USER_PASSWORD
+    ) {
+      userRole = "user";
     } else {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
       return;
     }
 
-    await AsyncStorage.setItem('userRole', userRole);
-    router.replace('/dashboard');
+    await AsyncStorage.setItem("userRole", userRole);
+    router.replace("../dashboard");
   };
 
   const handlePressIn = () => {
@@ -125,8 +139,12 @@ export default function LoginScreen() {
             placeholder="Email"
             placeholderTextColor="#8E8E93"
             value={email}
-            onChangeText={(text) => { setEmail(text); setError(''); }}
+            onChangeText={(text) => {
+              setEmail(text);
+              setError("");
+            }}
             keyboardType="email-address"
+            autoCapitalize="none"
           />
         </View>
         <View style={styles.inputContainer}>
@@ -135,20 +153,27 @@ export default function LoginScreen() {
             placeholder="Password"
             placeholderTextColor="#8E8E93"
             value={password}
-            onChangeText={(text) => { setPassword(text); setError(''); }}
+            onChangeText={(text) => {
+              setPassword(text);
+              setError("");
+            }}
             secureTextEntry={!isPasswordVisible}
           />
           <TouchableOpacity
             style={styles.eyeIcon}
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
           >
-            <Ionicons name={isPasswordVisible ? "eye-off" : "eye"} size={24} color="#8E8E93" />
+            <Ionicons
+              name={isPasswordVisible ? "eye-off" : "eye"}
+              size={24}
+              color="#8E8E93"
+            />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          style={[styles.button, isButtonDisabled && styles.buttonDisabled]} 
-          onPress={handleLogin} 
-          onPressIn={handlePressIn} 
+        <TouchableOpacity
+          style={[styles.button, isButtonDisabled && styles.buttonDisabled]}
+          onPress={handleLogin}
+          onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           disabled={isButtonDisabled}
         >
@@ -156,21 +181,57 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>Log In</Text>
           </Animated.View>
         </TouchableOpacity>
-        
+
         <View style={styles.socialLoginContainer}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ height: 1, backgroundColor: "#8E8E93", width: width * 0.38 }} />
+            <View
+              style={{
+                height: 1,
+                backgroundColor: "#8E8E93",
+                width: width * 0.38,
+              }}
+            />
             <Text style={styles.socialLoginText}>OR</Text>
-            <View style={{ height: 1, backgroundColor: "#8E8E93", width: width * 0.38 }} />
+            <View
+              style={{
+                height: 1,
+                backgroundColor: "#8E8E93",
+                width: width * 0.38,
+              }}
+            />
           </View>
           <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Social Login', 'Facebook login is not implemented yet.')}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() =>
+                Alert.alert(
+                  "Social Login",
+                  "Facebook login is not implemented yet."
+                )
+              }
+            >
               <Ionicons name="logo-facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Social Login', 'Google login is not implemented yet.')}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() =>
+                Alert.alert(
+                  "Social Login",
+                  "Google login is not implemented yet."
+                )
+              }
+            >
               <Ionicons name="logo-google" size={24} color="#EA4335" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton} onPress={() => Alert.alert('Social Login', 'Apple login is not implemented yet.')}>
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() =>
+                Alert.alert(
+                  "Social Login",
+                  "Apple login is not implemented yet."
+                )
+              }
+            >
               <Ionicons name="logo-apple" size={24} color="#000000" />
             </TouchableOpacity>
           </View>
@@ -178,7 +239,9 @@ export default function LoginScreen() {
 
         <Link href="/(auth)/register" asChild>
           <TouchableOpacity style={styles.signUpButton}>
-            <Text style={styles.signUpButtonText}>Don't have an account? Sign Up</Text>
+            <Text style={styles.signUpButtonText}>
+              Don't have an account? Sign Up
+            </Text>
           </TouchableOpacity>
         </Link>
       </View>
@@ -189,48 +252,48 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: "#F2F2F7",
   },
   shapeContainer: {
-    position: 'absolute',
+    position: "absolute",
     width,
     height,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   shape: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: 'rgba(79, 195, 247, 0.5)',
-    position: 'absolute',
+    backgroundColor: "rgba(79, 195, 247, 0.5)",
+    position: "absolute",
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 20,
   },
   title: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: '#000000',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#000000",
+    textAlign: "center",
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: '#8E8E93',
+    color: "#8E8E93",
     marginBottom: 30,
-    textAlign: 'center',
+    textAlign: "center",
   },
   errorText: {
-    color: 'red',
+    color: "red",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 10,
@@ -239,59 +302,59 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingVertical: 15,
-    color: '#000',
+    color: "#000",
   },
   eyeIcon: {
     padding: 10,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderRadius: 10,
     paddingVertical: 15,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   buttonDisabled: {
-    backgroundColor: '#A9A9A9', // Grey color in hex
+    backgroundColor: "#A9A9A9", // Grey color in hex
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   socialLoginContainer: {
     marginTop: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
   socialLoginText: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: "#8E8E93",
     marginHorizontal: 10,
   },
   socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
   },
   socialButton: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
     marginHorizontal: 10,
     elevation: 2,
   },
   signUpButton: {
-    backgroundColor: '#4FC3F7',
+    backgroundColor: "#4FC3F7",
     borderRadius: 10,
     paddingVertical: 15,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   signUpButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
