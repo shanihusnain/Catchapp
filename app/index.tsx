@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Animated } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Animated, Easing } from 'react-native';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as Animatable from 'react-native-animatable';
 
 export default function WelcomeScreen() {
   const rotateValue = useRef(new Animated.Value(0)).current;
+  const scaleValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,11 +19,27 @@ export default function WelcomeScreen() {
         toValue: 1,
         duration: 4000,
         useNativeDriver: true,
+        easing: Easing.linear,
       })
     ).start();
 
+    Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 1.2,
+        duration: 2000,
+        useNativeDriver: true,
+        easing: Easing.ease,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 2000,
+        useNativeDriver: true,
+        easing: Easing.ease,
+      }),
+    ]).start();
+
     return () => clearTimeout(timer);
-  }, [rotateValue]);
+  }, [rotateValue, scaleValue]);
 
   const rotateInterpolate = rotateValue.interpolate({
     inputRange: [0, 1],
@@ -35,23 +53,41 @@ export default function WelcomeScreen() {
         style={styles.background}
       >
         <View style={styles.content}>
-          <Animated.View style={[styles.iconContainer, { transform: [{ rotate: rotateInterpolate }] }]}>
+          <Animated.View style={[styles.iconContainer, { transform: [{ rotate: rotateInterpolate }, { scale: scaleValue }] }]}>
             <Ionicons name="football" size={100} color="#FFFFFF" />
           </Animated.View>
           <View style={styles.textContainer}>
-            <Text style={styles.title}>CatchApp</Text>
+            <Animatable.Text animation="bounceIn" style={styles.title}>
+              CatchApp
+            </Animatable.Text>
             <View style={styles.mirrorContainer}>
-              <Text style={[styles.title, styles.mirrorTitle]}>CatchApp</Text>
+              <Animatable.Text animation="bounceIn" delay={500} style={[styles.title, styles.mirrorTitle]}>
+                CatchApp
+              </Animatable.Text>
             </View>
           </View>
-          <Text style={styles.subtitle}>Connect Through Sports</Text>
+          <Animatable.Text animation="fadeInUp" delay={1000} style={styles.subtitle}>
+            Connect Through Sports
+          </Animatable.Text>
           <View style={styles.shapes}>
             <Animated.View style={[styles.shape, styles.shape1, { transform: [{ rotate: rotateInterpolate }] }]} />
             <Animated.View style={[styles.shape, styles.shape2, { transform: [{ rotate: rotateInterpolate }] }]} />
             <Animated.View style={[styles.shape, styles.shape3, { transform: [{ rotate: rotateInterpolate }] }]} />
           </View>
+          <View style={styles.iconsContainer}>
+            <Ionicons name="football" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="water" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="basketball" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="fitness" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="walk" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="bicycle" size={40} color="#FFFFFF" style={styles.icon} />
+            <Ionicons name="tennisball" size={40} color="#FFFFFF" style={styles.icon} />
+          </View>
+       
         </View>
-        <Text style={styles.footerText}>Katalan inc.</Text>
+        <Animatable.Text animation="fadeIn" delay={1500} style={styles.footerText}>
+          Katalan inc.
+        </Animatable.Text>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -137,6 +173,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'AvenirNext-Regular',
   },
+  iconsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  icon: {
+    margin: 10,
+  },
+  peopleIconContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
 });
-
-export default WelcomeScreen;

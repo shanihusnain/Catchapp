@@ -5,12 +5,16 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "Catchapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/f4dae1d9-24e9-4204-9fa7-05880b6c8241"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -21,7 +25,8 @@
         "NSLocationWhenInUseUsageDescription": "This app needs access to location to find nearby games and provide weather information.",
         "NSLocationAlwaysUsageDescription": "This app needs access to location to find nearby games and provide weather information even when the app is in the background.",
         "NSPhotoLibraryUsageDescription": "This app needs access to the photo library to allow users to set profile pictures."
-      }
+      },
+      "bundleIdentifier": "com.benkatalan.Catchapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -61,6 +66,9 @@
       "typedRoutes": true
     },
     "extra": {
+      "GOOGLE_CLIENT_ID": "260568393137-iu0hgqf0bl2hbqqublc1qndgtou13ig4.apps.googleusercontent.com",
+      "GOOGLE_IOS_CLIENT_ID": "260568393137-obf2utjf2mcpjnn10g6vi203d2rpfnq1.apps.googleusercontent.com",
+      "GOOGLE_ANDROID_CLIENT_ID": "260568393137-olcp7mamkt2hvl5onv23nlcs7ergokqf.apps.googleusercontent.com",
       "router": {
         "origin": false
       },
@@ -68,5 +76,6 @@
         "projectId": "f4dae1d9-24e9-4204-9fa7-05880b6c8241"
       }
     }
+
   }
 }
