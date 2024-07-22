@@ -22,6 +22,8 @@ import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import useDashboardProps from "./Dashboard/useDashboardProps";
 import GameDetailsModal from "@/components/GameDetailsModal/GameDetailsModal";
 import WeatherWidget from "./Dashboard/Components/WeatherWidget";
+import MemberDetailsModal from "@/components/MembersDetailsModal/MembersDetailsModal";
+
 const API_KEY = "d888abc55a29978c02f8acb1e8ac169b";
 const { width, height } = Dimensions.get("window");
 
@@ -77,13 +79,17 @@ export default function DashboardScreen() {
     rooms,
     setRooms,
     handleMarkerPress,
+    isMemberDetailsVisible, 
+    setIsMemberDetailsVisible,
+    selectedMember, 
+    setSelectedMember,
   } = useDashboardProps();
+
   const [avatarUri, setAvatarUri] = useState<string>(
     "https://via.placeholder.com/64"
   );
 
   const router = useRouter();
-
   const mapViewRef = useRef<MapView>(null);
 
   useEffect(() => {
@@ -106,15 +112,26 @@ export default function DashboardScreen() {
   const closeGameDetails = () => {
     setSportsDetailsModalVisible(!sportsDetailsModalVisible);
   };
+
   const handleMemberPress = (memberData) => {
     console.log("memeberPressed", memberData);
+    setSelectedMember(memberData);
+    setSportsDetailsModalVisible(false);
+    setIsMemberDetailsVisible(true);
   };
+
+  const closeMemberDetails = () => {
+    setIsMemberDetailsVisible(false);
+  };
+
   const openMaps = () => {
     console.log("openMaps");
   };
+
   const openWaze = () => {
     console.log("openWaze");
   };
+
   const confirmJoin = () => {
     console.log("confirm join");
   };
@@ -217,6 +234,24 @@ export default function DashboardScreen() {
   const convertTemperature = (celsius: number) => {
     return isCelsius ? celsius : (celsius * 9) / 5 + 32;
   };
+
+  const filterMarkers = (marker) => {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    const keysToSearch = [
+      marker.name,
+      marker.sport,
+      marker.title,
+      marker.time,
+      marker.date,
+      marker.location,
+      ...marker.players.map(player => player.name)
+    ];
+
+    return keysToSearch.some(key => key.toLowerCase().includes(lowerCaseQuery));
+  };
+
+  const filteredMarkers = dummyMarkerData.filter(filterMarkers);
+
   const RoomsFinder = () => (
     <View style={styles.roomsFinderContainer}>
       <Text style={styles.roomsFinderTitle}>Rooms Finder</Text>
@@ -244,7 +279,7 @@ export default function DashboardScreen() {
               />
             ))}
 
-            {dummyMarkerData.map((item, index) => (
+            {filteredMarkers.map((item, index) => (
               <Marker
                 key={index}
                 coordinate={{
@@ -325,17 +360,7 @@ export default function DashboardScreen() {
           convertTemperature={convertTemperature}
           styles={styles}
         />
-        <RoomsFinder />
-        <GameDetailsModal
-          isVisible={sportsDetailsModalVisible}
-          onClose={closeGameDetails}
-          selectedGame={selectedMarkerData}
-          handleMemberPress={handleMemberPress}
-          openMaps={openMaps}
-          openWaze={openWaze}
-          confirmJoin={confirmJoin}
-        />
-        <Text style={styles.question}>What are you up to today?</Text>
+          <Text style={styles.question}>What are you up to today?</Text>
         <View style={styles.searchContainer}>
           <Ionicons
             name="search"
@@ -351,6 +376,22 @@ export default function DashboardScreen() {
             onSubmitEditing={handleSearch}
           />
         </View>
+        <RoomsFinder />
+        <GameDetailsModal
+          isVisible={sportsDetailsModalVisible}
+          onClose={closeGameDetails}
+          selectedGame={selectedMarkerData}
+          handleMemberPress={handleMemberPress}
+          openMaps={openMaps}
+          openWaze={openWaze}
+          confirmJoin={confirmJoin}
+        />
+        <MemberDetailsModal
+          isVisible={isMemberDetailsVisible}
+          onClose={closeMemberDetails}
+          selectedMember={selectedMember}
+        />
+      
       </ScrollView>
       <View style={styles.tabBar}>
         <TouchableOpacity

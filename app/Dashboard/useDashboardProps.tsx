@@ -260,6 +260,8 @@ const useDashboardProps = () => {
 
     setSportsDetailsModalVisible(true);
   };
+  const [isMemberDetailsVisible, setIsMemberDetailsVisible] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   return {
     dummyMarkerData,
@@ -288,7 +290,7 @@ const useDashboardProps = () => {
     setUserRole,
     rooms,
     setRooms,
-    handleMarkerPress,
+    handleMarkerPress, isMemberDetailsVisible, setIsMemberDetailsVisible,selectedMember, setSelectedMember
   };
 };
 export default useDashboardProps;

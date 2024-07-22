@@ -21,7 +21,7 @@ const GameDetailsModal = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.gameDetailsModalContent}>
+          <ScrollView contentContainerStyle={styles.gameDetailsModalContent} showsVerticalScrollIndicator={false}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{selectedGame?.title}</Text>
               <TouchableOpacity onPress={onClose}>
