@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "685929853297",
+    "project_id": "catchapp-2e3da",
+    "storage_bucket": "catchapp-2e3da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:685929853297:android:2b2d27b2fe69c7b79786d0",
+        "android_client_info": {
+          "package_name": "com.benkatalan.Catchapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "685929853297-eqarb5ks6nt2n6qv3pt32upi2ss7ihru.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.benkatalan.Catchapp",
+            "certificate_hash": "d27b7d708e3c96c58ee5edf39d6cd410015c5a25"
+          }
+        },
+        {
+          "client_id": "685929853297-dsc4unngur7niisvf5e2bm8a537mm9lb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC3pAgYw_LSCZ6JrwclsgRwOJk-hikC6TI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "685929853297-dsc4unngur7niisvf5e2bm8a537mm9lb.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "685929853297-f2u5cld30dehoikmpv3unlvpqcuqkast.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.benkatalan.Catchapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

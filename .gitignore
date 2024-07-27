@@ -30,8 +30,8 @@ Thumbs.db
 /web-build
 
 # Optional: build directories
-/android
-/ios
+# /android
+# /ios
 
 # Ignore config and metadata
 .expo-settings.json
