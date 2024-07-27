@@ -15,7 +15,6 @@ interface CardProps {
 const { width } = Dimensions.get("window");
 
 const CardComponent: React.FC<CardProps> = ({ item }: CardProps) => {
-  console.log("item", item);
   return (
     <Pressable style={styles.card}>
       <Image

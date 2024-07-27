@@ -229,57 +229,60 @@ export default function DashboardScreen() {
   };
 
   const filteredMarkers = dummyMarkerData.filter(filterMarkers);
-
+  console.log("userLocation:::", userLocation);
   const RoomsFinder = () => (
     <View style={styles.roomsFinderContainer}>
       <Text style={styles.roomsFinderTitle}>Rooms Finder</Text>
       <View style={[styles.mapContainer, isMapExpanded && styles.mapExpanded]}>
-        {userLocation.latitude !== 0 && userLocation.longitude !== 0 ? (
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            showsUserLocation
-            ref={mapViewRef}
-            loadingEnabled
-            style={styles.map}
-            initialRegion={{
-              latitude: userLocation.latitude,
-              longitude: userLocation.longitude,
-              latitudeDelta: 0.015,
-              longitudeDelta: 0.0121,
-            }}
-          >
-            {rooms.map((room) => (
-              <Marker
-                key={room.id}
-                coordinate={room.location}
-                title={room.sport.name}
-                description={`Room for ${room.sport.name}`}
-              />
-            ))}
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          showsUserLocation
+          ref={mapViewRef}
+          loadingEnabled
+          style={styles.map}
+          initialRegion={{
+            latitude: 37.78825,
+            longitude: -122.4324,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.0121,
+            // latitude: userLocation.latitude,
+            // longitude: userLocation.longitude,
+            // latitudeDelta: 0.015,
+            // longitudeDelta: 0.0121,
+          }}
+        >
+          {rooms.map((room) => (
+            <Marker
+              key={room.id}
+              coordinate={room.location}
+              title={room.sport.name}
+              description={`Room for ${room.sport.name}`}
+            />
+          ))}
 
-            {filteredMarkers.map((item, index) => (
-              <Marker
-                key={index}
-                coordinate={{
-                  latitude: parseFloat(item.latitude),
-                  longitude: parseFloat(item.longitude),
-                }}
-                onPress={() => {
-                  handleMarkerPress(item);
-                }}
-              >
-                <Image
-                  style={{ width: 30, height: 30 }}
-                  source={`${chooseMarkerImage(item.sport)}`}
-                />
-              </Marker>
-            ))}
-          </MapView>
-        ) : (
-          <View style={styles.mapPlaceholder}>
-            <Text>Loading map...</Text>
-          </View>
-        )}
+          {filteredMarkers.map((item, index) => (
+            <Marker
+              key={index}
+              coordinate={{
+                latitude: parseFloat(item.latitude),
+                longitude: parseFloat(item.longitude),
+              }}
+              onPress={() => {
+                handleMarkerPress(item);
+              }}
+            >
+              <Image
+                style={{ width: 30, height: 30 }}
+                source={`${chooseMarkerImage(item.sport)}`}
+              />
+            </Marker>
+          ))}
+        </MapView>
+        {/* ) : (
+        <View style={styles.mapPlaceholder}>
+          <Text>Loading map...</Text>
+        </View>
+        ) */}
       </View>
       <TouchableOpacity
         style={styles.expandButton}
