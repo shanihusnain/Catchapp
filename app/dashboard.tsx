@@ -10,6 +10,7 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -23,32 +24,10 @@ import useDashboardProps from "./Dashboard/useDashboardProps";
 import GameDetailsModal from "@/components/GameDetailsModal/GameDetailsModal";
 import WeatherWidget from "./Dashboard/Components/WeatherWidget";
 import MemberDetailsModal from "@/components/MembersDetailsModal/MembersDetailsModal";
+import CardComponent from "@/components/CardComponent/CardComponent";
 
 const API_KEY = "d888abc55a29978c02f8acb1e8ac169b";
 const { width, height } = Dimensions.get("window");
-
-interface Weather {
-  temperature: number;
-  condition: string;
-  location: string;
-  icon: string;
-  humidity: number;
-  windSpeed: number;
-  forecast: Array<{
-    time: string;
-    temperature: number;
-    icon: string;
-  }>;
-}
-
-interface Room {
-  id: string;
-  sport: Sport;
-  location: {
-    latitude: number;
-    longitude: number;
-  };
-}
 
 export default function DashboardScreen() {
   const {
@@ -79,9 +58,9 @@ export default function DashboardScreen() {
     rooms,
     setRooms,
     handleMarkerPress,
-    isMemberDetailsVisible, 
+    isMemberDetailsVisible,
     setIsMemberDetailsVisible,
-    selectedMember, 
+    selectedMember,
     setSelectedMember,
   } = useDashboardProps();
 
@@ -105,7 +84,6 @@ export default function DashboardScreen() {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-      console.log(location.coords.latitude, location.coords.longitude);
     })();
   }, []);
 
@@ -114,7 +92,6 @@ export default function DashboardScreen() {
   };
 
   const handleMemberPress = (memberData) => {
-    console.log("memeberPressed", memberData);
     setSelectedMember(memberData);
     setSportsDetailsModalVisible(false);
     setIsMemberDetailsVisible(true);
@@ -186,7 +163,6 @@ export default function DashboardScreen() {
         })),
       });
     } catch (error) {
-      console.error("Error fetching weather:", error);
       setWeatherError("Failed to fetch weather");
     } finally {
       setWeatherLoading(false);
@@ -194,7 +170,7 @@ export default function DashboardScreen() {
   };
 
   const fetchRooms = async () => {
-    const mockRooms: Room[] = sports.map((sport, index) => ({
+    const mockRooms = sports.map((sport, index) => ({
       id: `room-${index}`,
       sport: sport,
       location: {
@@ -244,10 +220,12 @@ export default function DashboardScreen() {
       marker.time,
       marker.date,
       marker.location,
-      ...marker.players.map(player => player.name)
+      ...marker.players.map((player) => player.name),
     ];
 
-    return keysToSearch.some(key => key.toLowerCase().includes(lowerCaseQuery));
+    return keysToSearch.some((key) =>
+      key.toLowerCase().includes(lowerCaseQuery)
+    );
   };
 
   const filteredMarkers = dummyMarkerData.filter(filterMarkers);
@@ -360,7 +338,7 @@ export default function DashboardScreen() {
           convertTemperature={convertTemperature}
           styles={styles}
         />
-          <Text style={styles.question}>What are you up to today?</Text>
+        <Text style={styles.question}>What are you up to today?</Text>
         <View style={styles.searchContainer}>
           <Ionicons
             name="search"
@@ -377,6 +355,12 @@ export default function DashboardScreen() {
           />
         </View>
         <RoomsFinder />
+        <FlatList
+          numColumns={2}
+          data={filteredMarkers}
+          renderItem={({ item }) => <CardComponent item={item} />}
+          // keyExtractor={(item) => item.id}
+        />
         <GameDetailsModal
           isVisible={sportsDetailsModalVisible}
           onClose={closeGameDetails}
@@ -391,7 +375,6 @@ export default function DashboardScreen() {
           onClose={closeMemberDetails}
           selectedMember={selectedMember}
         />
-      
       </ScrollView>
       <View style={styles.tabBar}>
         <TouchableOpacity

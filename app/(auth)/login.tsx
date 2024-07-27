@@ -10,11 +10,17 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Platform,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import * as AppleAuthentication from "expo-apple-authentication";
+import { AccessToken, LoginManager, Settings } from "react-native-fbsdk-next";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 const ADMIN_EMAIL = "admin@gmail.com";
 const ADMIN_PASSWORD = "admin";
 const MANAGER_EMAIL = "manager@gmail.com";
@@ -39,7 +45,55 @@ export default function LoginScreen() {
     { top: 450, left: 250 },
     { top: 600, left: 50 },
   ]);
+  useEffect(() => {
+    GoogleSignin.configure({});
+  }, []);
+  const GoogleLogin = async () => {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    return userInfo;
+  };
+  const handleGoogleLogin = async () => {
+    console.log("google login pressed");
 
+    try {
+      const response = await GoogleLogin();
+      const { user } = response;
+      console.log("user resonseLLLLLLLL", user);
+      // console.log("user information", response?.user);
+      if (user?.id) {
+        router.replace("../dashboard");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    const requestTracking = async () => {
+      Settings.initializeSDK();
+      Settings.setAppID("1204951274197319"); // Replace 'YOUR_FACEBOOK_APP_ID' with your actual App ID
+      Settings.setClientToken("279f3165c0feb8eb40d9bccf62499fb4");
+    };
+    requestTracking();
+  }, []);
+  const facebookLogin = async () => {
+    const result = await LoginManager.logInWithPermissions([
+      "public_profile",
+      "email",
+    ]);
+    if (result.isCancelled) {
+      throw "User cancelled the login process";
+    }
+    const data = await AccessToken.getCurrentAccessToken();
+    if (!data) {
+      throw "Something went wrong obtaining access token";
+    } else if (data?.accessToken) {
+      router.replace("../dashboard");
+    }
+
+    console.log("data", data);
+    return data;
+  };
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -58,7 +112,24 @@ export default function LoginScreen() {
       ])
     ).start();
   }, [floatValue]);
-
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      console.log("credentials from apple login", credential);
+      // signed in
+    } catch (e) {
+      if (e.code === "ERR_REQUEST_CANCELED") {
+        // handle that the user canceled the sign-in flow
+      } else {
+        // handle other errors
+      }
+    }
+  };
   const handleLogin = async () => {
     if (!email || !password) {
       setError("Please enter both email and password.");
@@ -203,35 +274,19 @@ export default function LoginScreen() {
           <View style={styles.socialButtonsContainer}>
             <TouchableOpacity
               style={styles.socialButton}
-              onPress={() =>
-                Alert.alert(
-                  "Social Login",
-                  "Facebook login is not implemented yet."
-                )
-              }
+              onPress={facebookLogin}
             >
               <Ionicons name="logo-facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.socialButton}
-              onPress={() =>
-                Alert.alert(
-                  "Social Login",
-                  "Google login is not implemented yet."
-                )
-              }
-            >
-              <Ionicons name="logo-google" size={24} color="#EA4335" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.socialButton}
-              onPress={() =>
-                Alert.alert(
-                  "Social Login",
-                  "Apple login is not implemented yet."
-                )
-              }
-            >
+            {Platform.OS === "android" && (
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={handleGoogleLogin}
+              >
+                <Ionicons name="logo-google" size={24} color="#EA4335" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={styles.socialButton} onPress={GoogleLogin}>
               <Ionicons name="logo-apple" size={24} color="#000000" />
             </TouchableOpacity>
           </View>
