@@ -16,17 +16,22 @@
       "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/f4dae1d9-24e9-4204-9fa7-05880b6c8241"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs access to location to find nearby games and provide weather information.",
         "NSLocationAlwaysUsageDescription": "This app needs access to location to find nearby games and provide weather information even when the app is in the background.",
-        "NSPhotoLibraryUsageDescription": "This app needs access to the photo library to allow users to set profile pictures."
+        "NSPhotoLibraryUsageDescription": "This app needs access to the photo library to allow users to set profile pictures.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["com.googleusercontent.apps.260568393137-obf2utjf2mcpjnn10g6vi203d2rpfnq1"]
+          }
+        ]
       },
-      "bundleIdentifier": "com.benkatalan.Catchapp"
+      "bundleIdentifier": "com.benkatalan.Catchapp",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -40,7 +45,8 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.benkatalan.Catchapp"
+      "package": "com.benkatalan.Catchapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -60,7 +66,33 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Catchapp to use your location for finding nearby games and providing weather information."
         }
-      ]
+      ],
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "1204951274197319",
+          "displayName": "Catchapp",
+          "clientToken": "279f3165c0feb8eb40d9bccf62499fb4",
+          "scheme": "fb1204951274197319",
+          "advertiserIDCollectionEnabled": false,
+          "autoLogAppEventsEnabled": false,
+          "isAutoInitEnabled": true,
+          "iosUserTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ],
+      [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.260568393137-obf2utjf2mcpjnn10g6vi203d2rpfnq1"
+        }
+      ],
+      ["expo-apple-authentication"]
     ],
     "experiments": {
       "typedRoutes": true
@@ -76,6 +108,5 @@
         "projectId": "f4dae1d9-24e9-4204-9fa7-05880b6c8241"
       }
     }
-
   }
 }
