@@ -1,33 +1,110 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, TextInput, Switch, Image, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import React, { useContext, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  ScrollView,
+  TextInput,
+  Switch,
+  Image,
+  Alert,
+  Keyboard,
+  FlatList,
+  Dimensions,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import * as ImagePicker from 'expo-image-picker';
-import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
-import Slider from '@react-native-community/slider';
-import { sports, Sport } from './config/sportsConfig';
+import * as ImagePicker from "expo-image-picker";
+import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
+import Slider from "@react-native-community/slider";
+import { sports, Sport } from "./config/sportsConfig";
+import {
+  getLatLongFromPlaceName,
+  searchPlacesApi,
+} from "../app/services/HelperFunctions";
+import * as Location from "expo-location";
+import { MarkerContext } from "./services/MarkerContext";
 
-
-
-const levels = ['Beginner', 'Novice', 'Intermediate', 'Advanced', 'Expert'];
-
+const levels = ["Beginner", "Novice", "Intermediate", "Advanced", "Expert"];
+const { height, width } = Dimensions.get("window");
 export default function CreateScreen() {
+  const { dummyMarkerData, addMarker } = useContext(MarkerContext);
   const [step, setStep] = useState(1);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
-  const [location, setLocation] = useState('');
-  const [maxPlayers, setMaxPlayers] = useState('');
+  const [location, setLocation] = useState("");
+  const [maxPlayers, setMaxPlayers] = useState("");
   const [allowWaitingList, setAllowWaitingList] = useState(false);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
   const [roomImage, setRoomImage] = useState<string | null>(null);
   const [level, setLevel] = useState(2); // Default to 'Intermediate'
-
+  const [autoFillListShow, setAutoFillListShow] = useState(false);
+  const [placesList, setPlacesList] = useState([]);
+  const [namelisting, setNamelisting] = useState();
+  const [address, setAddress] = useState("");
+  const [userLocation, setUserLocation] = useState({
+    latitude: 0,
+    longitude: 0,
+  });
   const router = useRouter();
+  const onClearInputPress = () => {
+    Keyboard.dismiss();
+    setAddress("");
+  };
 
+  const onAddressInputFocus = () => {
+    setAddress("");
+  };
+  const onLocationTextChange = async (text: any) => {
+    setPlacesList([]);
+    // setAutoFillLoading(true);
+    setAutoFillListShow(true);
+    const list: any = await searchPlacesApi(text, userLocation);
+    setPlacesList(list);
+    setAutoFillListShow(true);
+    // setAutoFillLoading(false);
+  };
+  const onPickupAddressTextChange = (text: any) => {
+    setAddress(text);
+    if (text.length > 2) {
+      onLocationTextChange(text);
+    } else {
+      setAutoFillListShow(false);
+    }
+  };
+  const onLocationPress = async (text: any) => {
+    setAutoFillListShow(false);
+
+    setPlacesList([]);
+    const address: any = await getLatLongFromPlaceName(text);
+
+    setAddress(text);
+    setUserLocation({
+      latitude: address.geometry.location.lat,
+      longitude: address.geometry.location.lng,
+    });
+  };
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.error("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    })();
+  }, []);
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -71,23 +148,41 @@ export default function CreateScreen() {
     if (step === 1 && selectedSport) {
       setStep(2);
     } else if (step === 2) {
-      if (!title || !date || !time || !location || !maxPlayers) {
-        Alert.alert('Missing Information', 'Please fill in all fields.');
+      if (!title || !date || !time || !address || !maxPlayers) {
+        Alert.alert("Missing Information", "Please fill in all fields.");
         return;
       }
       // Here you would typically save the room data
-      console.log('Room created:', { 
-        selectedSport, 
-        title, 
-        date: date.toISOString().split('T')[0], 
-        time: time.toTimeString().slice(0, 5), 
-        location, 
-        maxPlayers, 
-        allowWaitingList, 
-        level: levels[level - 1] 
+      console.log("Room created:", {
+        id: String(dummyMarkerData.length + 1),
+        name: address,
+        sport: selectedSport,
+        title,
+        date: date.toISOString().split("T")[0],
+        time: time.toTimeString().slice(0, 5),
+        location: address,
+        maxPlayers,
+        allowWaitingList,
+        level: levels[level - 1],
       });
-      Alert.alert('Success', 'Room created successfully!', [
-        { text: 'OK', onPress: () => router.push('/dashboard') }
+      addMarker({
+        id: String(dummyMarkerData.length + 1),
+        name: address,
+        latitude: userLocation?.latitude, // Use actual latitude if available
+        longitude: userLocation?.longitude, // Use actual longitude if available
+        sport: selectedSport,
+        title: title,
+        placeImage: null,
+        date: date.toISOString().split("T")[0],
+        time: time.toTimeString().slice(0, 5),
+        location: location,
+        currentPlayers: maxPlayers,
+        maxPlayers: maxPlayers,
+        level: levels[level - 1],
+        players: [],
+      });
+      Alert.alert("Success", "Room created successfully!", [
+        { text: "OK", onPress: () => router.push("/dashboard") },
       ]);
     }
   };
@@ -110,16 +205,24 @@ export default function CreateScreen() {
           </Svg>
           <View style={styles.header}>
             {step === 2 && (
-              <TouchableOpacity style={styles.backButton} onPress={() => setStep(1)}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => setStep(1)}
+              >
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
             )}
-            <Text style={styles.title}>{step === 1 ? 'Create a New Room' : 'Room Details'}</Text>
+            <Text style={styles.title}>
+              {step === 1 ? "Create a New Room" : "Room Details"}
+            </Text>
           </View>
         </View>
         {step === 1 ? (
           <>
-            <Text style={styles.question}>Which sport would you like to do, <Text style={styles.boldText}>John</Text>?</Text>
+            <Text style={styles.question}>
+              Which sport would you like to do,{" "}
+              <Text style={styles.boldText}>John</Text>?
+            </Text>
             <View style={styles.sportsGrid}>
               {sports.map((sport) => (
                 <TouchableOpacity
@@ -127,7 +230,7 @@ export default function CreateScreen() {
                   style={[
                     styles.sportButton,
                     { backgroundColor: sport.color },
-                    selectedSport?.name === sport.name && styles.selectedSport
+                    selectedSport?.name === sport.name && styles.selectedSport,
                   ]}
                   onPress={() => setSelectedSport(sport)}
                 >
@@ -144,7 +247,10 @@ export default function CreateScreen() {
           </>
         ) : (
           <>
-            <Text style={styles.subtitle}>Let's set up your {selectedSport?.name} game, <Text style={styles.boldText}>John</Text>!</Text>
+            <Text style={styles.subtitle}>
+              Let's set up your {selectedSport?.name} game,{" "}
+              <Text style={styles.boldText}>John</Text>!
+            </Text>
 
             <Text style={styles.formLabel}>Room Title</Text>
             <TextInput
@@ -154,9 +260,12 @@ export default function CreateScreen() {
               placeholder="Enter room title"
               placeholderTextColor="#888"
             />
-            
+
             <Text style={styles.formLabel}>Date</Text>
-            <TouchableOpacity style={[styles.dateTimeButton, styles.whiteBackground]} onPress={showDatePicker}>
+            <TouchableOpacity
+              style={[styles.dateTimeButton, styles.whiteBackground]}
+              onPress={showDatePicker}
+            >
               <Text>{date.toDateString()}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -165,9 +274,12 @@ export default function CreateScreen() {
               onConfirm={handleDateConfirm}
               onCancel={hideDatePicker}
             />
-            
+
             <Text style={styles.formLabel}>Time</Text>
-            <TouchableOpacity style={[styles.dateTimeButton, styles.whiteBackground]} onPress={showTimePicker}>
+            <TouchableOpacity
+              style={[styles.dateTimeButton, styles.whiteBackground]}
+              onPress={showTimePicker}
+            >
               <Text>{time.toTimeString().slice(0, 5)}</Text>
             </TouchableOpacity>
             <DateTimePickerModal
@@ -176,16 +288,59 @@ export default function CreateScreen() {
               onConfirm={handleTimeConfirm}
               onCancel={hideTimePicker}
             />
-            
+
             <Text style={styles.formLabel}>Location</Text>
             <TextInput
-              style={styles.input}
-              value={location}
-              onChangeText={setLocation}
               placeholder="Enter location"
+              style={styles.input}
+              value={address}
+              onChangeText={onPickupAddressTextChange}
               placeholderTextColor="#888"
+              secureTextEntry={false}
+              onFocus={onAddressInputFocus}
             />
-            
+            {autoFillListShow && (
+              <FlatList
+                keyboardShouldPersistTaps={"always"}
+                scrollEnabled={true}
+                bounces={false}
+                contentContainerStyle={{ height: 300 }}
+                data={placesList}
+                ItemSeparatorComponent={() => {
+                  return (
+                    <View
+                      style={{ height: 0, width: width, alignSelf: "center" }}
+                    />
+                  );
+                }}
+                renderItem={({ item }: any) => {
+                  return (
+                    <TouchableOpacity
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        backgroundColor: "rgba(255,255,255,1)",
+                        paddingVertical: 10,
+                        paddingHorizontal: 15,
+                        borderBottomColor: "rgba(0,0,0,.2)",
+                        borderBottomWidth: 1,
+                      }}
+                      onPress={() => onLocationPress(item?.description)}
+                    >
+                      <Text
+                        style={{
+                          letterSpacing: 0.5,
+                          color: "rgba(0,0,0,.8)",
+                          // fontFamily: fonts.medium,
+                        }}
+                      >
+                        {item.description}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
             <Text style={styles.formLabel}>Maximum Players</Text>
             <TextInput
               style={styles.input}
@@ -195,7 +350,7 @@ export default function CreateScreen() {
               placeholderTextColor="#888"
               keyboardType="numeric"
             />
-            
+
             <View style={styles.switchContainer}>
               <Text style={styles.formLabel}>Allow Waiting List (3 spots)</Text>
               <Switch
@@ -207,7 +362,7 @@ export default function CreateScreen() {
             <Text style={styles.formLabel}>Level</Text>
             <View style={styles.levelContainer}>
               <Slider
-                style={{width: '100%', height: 40}}
+                style={{ width: "100%", height: 40 }}
                 minimumValue={1}
                 maximumValue={5}
                 step={1}
@@ -218,7 +373,13 @@ export default function CreateScreen() {
               />
               <View style={styles.levelLabels}>
                 {levels.map((label, index) => (
-                  <Text key={label} style={[styles.levelLabel, index + 1 === level && styles.selectedLevel]}>
+                  <Text
+                    key={label}
+                    style={[
+                      styles.levelLabel,
+                      index + 1 === level && styles.selectedLevel,
+                    ]}
+                  >
                     {label}
                   </Text>
                 ))}
@@ -226,7 +387,10 @@ export default function CreateScreen() {
             </View>
 
             <Text style={styles.formLabel}>Room Image</Text>
-            <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+            <TouchableOpacity
+              style={styles.imagePickerButton}
+              onPress={pickImage}
+            >
               {roomImage ? (
                 <Image source={{ uri: roomImage }} style={styles.roomImage} />
               ) : (
@@ -235,31 +399,48 @@ export default function CreateScreen() {
             </TouchableOpacity>
           </>
         )}
-        
-        <TouchableOpacity 
-          style={[styles.nextButton, step === 1 && !selectedSport && styles.disabledButton]} 
+
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            step === 1 && !selectedSport && styles.disabledButton,
+          ]}
           onPress={handleNext}
           disabled={step === 1 && !selectedSport}
         >
-          <Text style={styles.nextButtonText}>{step === 1 ? 'Next' : 'Create Room'}</Text>
+          <Text style={styles.nextButtonText}>
+            {step === 1 ? "Next" : "Create Room"}
+          </Text>
           <Ionicons name="arrow-forward" size={24} color="white" />
         </TouchableOpacity>
       </ScrollView>
-      
+
       <View style={styles.tabBar}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/dashboard')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push("/dashboard")}
+        >
           <Ionicons name="home-outline" size={24} color="#8E8E93" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/search')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push("/search")}
+        >
           <Ionicons name="search-outline" size={24} color="#8E8E93" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.tabItem}>
           <Ionicons name="add-circle" size={24} color="#007AFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/notifications')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push("/notifications")}
+        >
           <Ionicons name="notifications-outline" size={24} color="#8E8E93" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/friends-and-chat')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push("/friends-and-chat")}
+        >
           <Ionicons name="chatbubbles-outline" size={24} color="#8E8E93" />
         </TouchableOpacity>
       </View>
@@ -270,188 +451,188 @@ export default function CreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
+    backgroundColor: "#F2F2F7",
   },
   content: {
     padding: 20,
   },
   headerBackground: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     paddingBottom: 10,
     paddingTop: 10,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   backButton: {
-    position: 'absolute',
+    position: "absolute",
     left: 20,
     top: 10,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   question: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   sportsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
   sportButton: {
-    width: '48%',
+    width: "48%",
     aspectRatio: 1,
     borderRadius: 10,
     padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 15,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3.84,
   },
   selectedSport: {
     borderWidth: 3,
-    borderColor: 'white',
+    borderColor: "white",
   },
   sportText: {
-    color: 'white',
+    color: "white",
     marginTop: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   checkmark: {
-    position: 'absolute',
+    position: "absolute",
     top: 5,
     right: 5,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: "rgba(255,255,255,0.3)",
     borderRadius: 12,
   },
   formLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 15,
     marginBottom: 5,
   },
   input: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3.84,
   },
   switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 15,
   },
   nextButton: {
-    flexDirection: 'row',
-    backgroundColor: '#007AFF',
+    flexDirection: "row",
+    backgroundColor: "#007AFF",
     borderRadius: 10,
     padding: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 20,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3.84,
   },
   nextButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
     fontSize: 18,
     marginRight: 10,
   },
   tabBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: '#E5E5EA',
-    backgroundColor: '#F2F2F7',
+    borderTopColor: "#E5E5EA",
+    backgroundColor: "#F2F2F7",
     paddingVertical: 10,
   },
   tabItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   subtitle: {
     fontSize: 18,
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
   boldText: {
-    fontWeight: 'bold',
-    color: '#007AFF',
+    fontWeight: "bold",
+    color: "#007AFF",
   },
   dateTimeButton: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: "#F2F2F7",
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
   },
   whiteBackground: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   disabledButton: {
-    backgroundColor: '#D1D1D6',
+    backgroundColor: "#D1D1D6",
   },
   imagePickerButton: {
-    backgroundColor: '#F2F2F7',
+    backgroundColor: "#F2F2F7",
     borderRadius: 10,
     padding: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     height: 200,
     marginBottom: 20,
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3.84,
   },
   roomImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 10,
   },
   imagePickerText: {
-    color: '#888',
+    color: "#888",
   },
   levelContainer: {
     marginBottom: 20,
   },
   levelLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 10,
   },
   levelLabel: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
   selectedLevel: {
-    color: '#007AFF',
-    fontWeight: 'bold',
+    color: "#007AFF",
+    fontWeight: "bold",
   },
 });

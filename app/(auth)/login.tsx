@@ -286,9 +286,14 @@ export default function LoginScreen() {
                 <Ionicons name="logo-google" size={24} color="#EA4335" />
               </TouchableOpacity>
             )}
-            <TouchableOpacity style={styles.socialButton} onPress={GoogleLogin}>
-              <Ionicons name="logo-apple" size={24} color="#000000" />
-            </TouchableOpacity>
+            {Platform.OS === "ios" && (
+              <TouchableOpacity
+                style={styles.socialButton}
+                onPress={handleAppleLogin}
+              >
+                <Ionicons name="logo-apple" size={24} color="#000000" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 

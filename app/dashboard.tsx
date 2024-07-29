@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -25,13 +25,14 @@ import GameDetailsModal from "@/components/GameDetailsModal/GameDetailsModal";
 import WeatherWidget from "./Dashboard/Components/WeatherWidget";
 import MemberDetailsModal from "@/components/MembersDetailsModal/MembersDetailsModal";
 import CardComponent from "@/components/CardComponent/CardComponent";
-
+import { MarkerContext } from "../app/services/MarkerContext";
 const API_KEY = "d888abc55a29978c02f8acb1e8ac169b";
 const { width, height } = Dimensions.get("window");
 
 export default function DashboardScreen() {
+  const { dummyMarkerData, addMarker } = useContext(MarkerContext);
   const {
-    dummyMarkerData,
+    // dummyMarkerData,
     chooseMarkerImage,
     selectedMarkerData,
     setSelectedMarkerData,
@@ -85,7 +86,7 @@ export default function DashboardScreen() {
         longitude: location.coords.longitude,
       });
     })();
-  }, []);
+  }, [userLocation]);
 
   const closeGameDetails = () => {
     setSportsDetailsModalVisible(!sportsDetailsModalVisible);
@@ -229,7 +230,7 @@ export default function DashboardScreen() {
   };
 
   const filteredMarkers = dummyMarkerData.filter(filterMarkers);
-  console.log("userLocation:::", userLocation);
+
   const RoomsFinder = () => (
     <View style={styles.roomsFinderContainer}>
       <Text style={styles.roomsFinderTitle}>Rooms Finder</Text>
@@ -241,14 +242,14 @@ export default function DashboardScreen() {
           loadingEnabled
           style={styles.map}
           initialRegion={{
-            latitude: 37.78825,
-            longitude: -122.4324,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.0121,
-            // latitude: userLocation.latitude,
-            // longitude: userLocation.longitude,
+            // latitude: 37.78825,
+            // longitude: -122.4324,
             // latitudeDelta: 0.015,
             // longitudeDelta: 0.0121,
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            latitudeDelta: 0.015,
+            longitudeDelta: 0.0121,
           }}
         >
           {rooms.map((room) => (
